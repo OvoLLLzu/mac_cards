@@ -5,49 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>МАК-Карты | Ответ внутри тебя</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>МАК-Карты</h1>
-            <p>Ответ внутри тебя</p>
-        </header>
-        <main id="app">
-            <div class="screen" id="home">
-                <h2>Выберите расклад:</h2>
-                <div class="layout-buttons">
-                    <button onclick="startLayout('actual')">Актуальный вопрос</button>
-                    <button onclick="startLayout('relations')">Отношения</button>
-                    <button onclick="startLayout('money1')">Деньги: Качества</button>
-                    <button onclick="startLayout('money2')">Деньги: Взгляд со стороны</button>
-                    <button onclick="startLayout('simple')">Простой расклад</button>
-                </div>
+        <!-- Главный экран -->
+        <div class="screen" id="home">
+            <header>
+                <h1>МАК-Карты</h1>
+                <p>Ответ внутри тебя</p>
+            </header>
+            <div class="layout-buttons">
+                <button onclick="startLayout('actual')">Актуальный вопрос</button>
+                <button onclick="startLayout('relations')">Отношения</button>
+                <button onclick="startLayout('money1')">Деньги: Качества</button>
+                <button onclick="startLayout('money2')">Деньги: Взгляд со стороны</button>
+                <button onclick="startLayout('simple')">Простой расклад</button>
             </div>
-            <div class="screen" id="layout-screen" style="display: none;">
-                <h2 id="layout-title"></h2>
-                <p id="layout-description"></p>
-                <button onclick="startDrawing()">Начать расклад</button>
+        </div>
+
+        <!-- Экран расклада -->
+        <div class="screen" id="cards-screen" style="display: none;">
+            <div id="cards-container">
+                <!-- Анимация колоды и карты будут вставлены сюда -->
             </div>
-            <div class="screen" id="cards-screen" style="display: none;">
-                <div id="cards-container"></div>
-                <button onclick="finishLayout()">Перейти к интерпретации</button>
-            </div>
-            <div class="screen" id="interpretation-screen" style="display: none;">
+        </div>
+
+        <!-- Экран интерпретации -->
+        <div class="screen" id="interpretation-screen" style="display: none;">
+            <header>
                 <h2>Как трактовать карту?</h2>
-                <p>Каждая карта — это повод заглянуть внутрь себя. Зафиксируйте мысли, проговорите их вслух или запишите.</p>
-                <ul>
-                    <li>Что на карте больше всего привлекло мое внимание?</li>
-                    <li>Что я чувствую, глядя на карту?</li>
-                    <li>Какие эмоции у меня возникают?</li>
-                    <li>...</li>
-                </ul>
-                <div class="warning">⚠️ Расклад не сохраняется. Сделайте скриншот!</div>
-                <a href="https://t.me/Netele_Zu" target="_blank">
-                    <button>Записаться на консультацию</button>
-                </a>
-            </div>
-        </main>
+            </header>
+            <p>Каждая карта — это повод заглянуть внутрь себя. Зафиксируйте мысли, проговорите их вслух или запишите.</p>
+            <ul>
+                <li>Что на карте больше всего привлекло мое внимание?</li>
+                <li>Что я чувствую, глядя на карту?</li>
+                <li>Какие эмоции у меня возникают?</li>
+                <li>Как чувствует себя персонаж на картинке?</li>
+                <li>Что персонаж будет делать дальше? Как я к этому отношусь?</li>
+                <li>Вижу ли я на карте себя? В какой роли я здесь?</li>
+                <li>Есть ли на карте то, что осталось незамеченным? Почему?</li>
+                <li>Как то, что изображено на карте, говорит мне о моем запросе?</li>
+            </ul>
+            <p class="warning">⚠️ Расклад не сохраняется. Сделайте скриншот!</p>
+            <a href="https://t.me/Netele_Zu" target="_blank">
+                <button>Записаться на консультацию</button>
+            </a>
+        </div>
     </div>
+
+    <!-- Скрипты -->
     <script src="script.js"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@ const layouts = {
     actual: {
         title: "Актуальный вопрос",
         description: "Сформулируйте свой запрос, далее поочередно выберите 3 карты.",
-        cardsFolder: 'assets/cards/allegorii/',  // ✅ Правильный путь
+        cardsFolder: 'assets/cards/allegorii/',
         cardCount: 3,
         questions: [
             "Что нужно сделать, чтобы ситуация решилась? Какие действия предпринять?",
@@ -13,7 +13,7 @@ const layouts = {
     relations: {
         title: "Отношения",
         description: "Сформулируйте запрос, далее поочередно выберите 5 карт.",
-        cardsFolder: 'assets/cards/lichnye_granicy/',  // ✅ Правильный путь
+        cardsFolder: 'assets/cards/lichnye_granicy/',
         cardCount: 5,
         questions: [
             "Что я делаю в отношениях?",
@@ -26,7 +26,7 @@ const layouts = {
     money1: {
         title: "Деньги: Качества",
         description: "Сформулируйте запрос, далее поочередно выберите 4 карты.",
-        cardsFolder: 'assets/cards/delovaya_koloda/',  // ✅ Правильный путь
+        cardsFolder: 'assets/cards/delovaya_koloda/',
         cardCount: 4,
         questions: [
             "Какие мои качества способствуют получению дохода?",
@@ -38,7 +38,7 @@ const layouts = {
     money2: {
         title: "Деньги: Взгляд со стороны",
         description: "Сформулируйте запрос, далее поочередно выберите 4 карты.",
-        cardsFolder: 'assets/cards/delovaya_koloda/',  // ✅ Правильный путь
+        cardsFolder: 'assets/cards/delovaya_koloda/',
         cardCount: 4,
         questions: [
             "Что деньги думают обо мне (Я глазами денег)?",
@@ -50,52 +50,78 @@ const layouts = {
     simple: {
         title: "Простой расклад",
         description: "Простой расклад из одной карты, поможет найти ответ на любой вопрос.",
-        cardsFolder: 'assets/cards/resursy/',  // ✅ Правильный путь
+        cardsFolder: 'assets/cards/resursy/',
         cardCount: 1,
         questions: []
     }
 };
 
 let currentLayout = null;
+let currentCardIndex = 0;
 
 function startLayout(layoutType) {
     currentLayout = layouts[layoutType];
     document.getElementById('home').style.display = 'none';
-    document.getElementById('layout-screen').style.display = 'block';
-    document.getElementById('layout-title').textContent = currentLayout.title;
-    document.getElementById('layout-description').textContent = currentLayout.description;
-}
-
-function startDrawing() {
-    document.getElementById('layout-screen').style.display = 'none';
     document.getElementById('cards-screen').style.display = 'block';
     document.getElementById('cards-container').innerHTML = '';
-    
-    // Генерируем имена файлов
-    const cardFiles = [];
-    for (let i = 0; i < currentLayout.cardCount; i++) {
-        const filename = `card${i + 1}.jpg`;
-        cardFiles.push(filename);
+    currentCardIndex = 0;
+
+    // Показываем колоду и запускаем анимацию
+    showDeck();
+}
+
+function showDeck() {
+    const container = document.getElementById('cards-container');
+    container.innerHTML = `
+        <div id="deck" class="deck">
+            <div class="card-back"></div>
+        </div>
+        <p id="draw-button" class="hidden" onclick="drawCard()">Нажмите, чтобы открыть карту</p>
+    `;
+
+    const deck = document.getElementById('deck');
+    deck.classList.add('shuffle');
+
+    setTimeout(() => {
+        deck.classList.remove('shuffle');
+        document.getElementById('draw-button').classList.remove('hidden');
+    }, 3000);
+}
+
+function drawCard() {
+    if (currentCardIndex >= currentLayout.cardCount) return;
+
+    const container = document.getElementById('cards-container');
+    const deck = document.getElementById('deck');
+
+    const img = document.createElement('img');
+    img.src = `${currentLayout.cardsFolder}card${currentCardIndex + 1}.jpg`;
+    img.alt = `Карта ${currentCardIndex + 1}`;
+    img.className = 'card';
+    img.style.display = 'none';
+
+    container.appendChild(img);
+
+    setTimeout(() => {
+        deck.style.opacity = '0.4';
+        img.style.display = 'block';
+        img.classList.add('flip');
+    }, 500);
+
+    if (currentCardIndex < currentLayout.questions.length) {
+        const question = document.createElement('p');
+        question.textContent = currentLayout.questions[currentCardIndex];
+        container.appendChild(question);
     }
-    
-    // Создаём карточки с картинками
-    cardFiles.forEach((file, index) => {
-        setTimeout(() => {
-            const cardElement = document.createElement('div');
-            cardElement.className = 'card';
-            cardElement.innerHTML = `
-                <p>Карта ${index + 1}:</p>
-                <img 
-                    src="${currentLayout.cardsFolder}${file}" 
-                    alt="Карта ${index + 1}" 
-                    style="width: 100%; max-height: 200px;"
-                    onerror="this.src='assets/images/card-placeholder.png'; this.onerror=null;"
-                />
-                <p>${currentLayout.questions[index]}</p>
-            `;
-            document.getElementById('cards-container').appendChild(cardElement);
-        }, index * 1000);
-    });
+
+    currentCardIndex++;
+
+    if (currentCardIndex >= currentLayout.cardCount) {
+        const finishBtn = document.createElement('button');
+        finishBtn.textContent = 'Перейти к интерпретации';
+        finishBtn.onclick = finishLayout;
+        container.appendChild(finishBtn);
+    }
 }
 
 function finishLayout() {
