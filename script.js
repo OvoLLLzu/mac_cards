@@ -96,10 +96,10 @@ function shuffle(array) {
 
 // Главная страница
 function renderHome() {
-  app.innerHTML = 
+  app.innerHTML = `
     <h1>МАК-расклады</h1>
     <p class="tip">Выберите расклад для работы с метафорическими картами</p>
-  ;
+  `;
   
   layouts.forEach(layout => {
     const button = document.createElement('button');
