@@ -71,12 +71,12 @@ const layouts = [
   }
 ];
 
-// Карты для каждой колоды (замените реальными файлами)
+// Карты для каждой колоды (пример - замените реальными именами файлов)
 const decks = {
-  allegorii: Array.from({length: 60}, (_, i) => card${i+1}.jpg),
-  lichnye_granicy: Array.from({length: 70}, (_, i) => card${i+1}.jpg),
-  delovaya_koloda: Array.from({length: 80}, (_, i) => card${i+1}.jpg),
-  resursy: Array.from({length: 50}, (_, i) => card${i+1}.jpg)
+  allegorii: ["card1.jpg", "card2.jpg", "card3.jpg", "card4.jpg", "card5.jpg"],
+  lichnye_granicy: ["card1.jpg", "card2.jpg", "card3.jpg", "card4.jpg", "card5.jpg"],
+  delovaya_koloda: ["card1.jpg", "card2.jpg", "card3.jpg", "card4.jpg", "card5.jpg"],
+  resursy: ["card1.jpg", "card2.jpg", "card3.jpg", "card4.jpg", "card5.jpg"]
 };
 
 // Глобальные переменные состояния
@@ -96,7 +96,10 @@ function shuffle(array) {
 
 // Главная страница
 function renderHome() {
-  app.innerHTML = '<h2>Выберите расклад</h2>';
+  app.innerHTML = 
+    <h1>МАК-расклады</h1>
+    <p class="tip">Выберите расклад для работы с метафорическими картами</p>
+  ;
   
   layouts.forEach(layout => {
     const button = document.createElement('button');
@@ -110,7 +113,7 @@ function renderHome() {
 
 // Экран описания расклада
 function showLayoutDescription(layout) {
-app.innerHTML = 
+  app.innerHTML = 
     <div class="description-block">
       <h2>${layout.name}</h2>
       <p>${layout.description}</p>
@@ -130,8 +133,7 @@ function startDrawing(layout) {
   currentStep = 0;
   
   // Создаем перемешанную колоду без повторов
-  selectedCards = shuffle(decks[layout.folder]).slice(0, layout.questions.length);
-  
+  selectedCards = shuffle([...decks[layout.folder]]).slice(0, layout.questions.length);
   renderStep();
 }
 
@@ -139,8 +141,8 @@ function startDrawing(layout) {
 function renderStep() {
   app.innerHTML = 
     <div class="description-block">
-      <h3>${currentLayout.name}</h3>
-      <div class="step-indicator">Шаг ${currentStep + 1} из ${currentLayout.questions.length}</div>
+      <h2>${currentLayout.name}</h2>
+      <div class="step-indicator">Карта ${currentStep + 1} из ${currentLayout.questions.length}</div>
       <p><strong>${currentLayout.questions[currentStep]}</strong></p>
       <div class="card-block">
         <img src="assets/cards/${currentLayout.folder}/${selectedCards[currentStep]}" 
@@ -171,7 +173,7 @@ function renderInterpretation() {
     <div class="description-block">
       <h2>${currentLayout.name}</h2>
       
-      <div class="card-container">
+      <div class="cards-summary">
         ${selectedCards.map((card, index) => 
           <div class="card-block">
             <p><strong>${currentLayout.questions[index]}</strong></p>
@@ -183,12 +185,12 @@ function renderInterpretation() {
       
       <p class="tip">⚠️ Сделайте скриншот — расклад не сохраняется автоматически</p>
       
-      <div class="interpretation-section">
+      <div class="interpretation-section" style="animation-delay: 0.1s">
         <h3>Как интерпретировать:</h3>
         <p>${currentLayout.interpretation}</p>
       </div>
       
-      <div class="interpretation-section">
+      <div class="interpretation-section" style="animation-delay: 0.3s">
         <h3>Вопросы для самоанализа:</h3>
         <ul>
           <li>Какие эмоции вызывают карты?</li>
@@ -200,20 +202,12 @@ function renderInterpretation() {
       </div>
       
       <button class="cta-button" onclick="tg.openTelegramLink('https://t.me/Netele_Zu')">
-        Записаться на консультацию
+        ✨ Записаться на консультацию
       </button>
       
       <button onclick="renderHome()">← Вернуться на главную</button>
     </div>
   ;
-  
-  // Плавное появление блоков
-  setTimeout(() => {
-    document.querySelectorAll('.interpretation-section').forEach((section, i) => {
-      section.style.animation = fadeIn 0.5s ease ${i * 0.2}s forwards;
-      section.style.opacity = '0';
-    });
-  }, 100);
   
   tg.MainButton.setText("На главную");
   tg.MainButton.onClick(renderHome);

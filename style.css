@@ -6,77 +6,84 @@
   --accent: #5c5470;
   --accent-hover: #7e7394;
   --cta: #6a5acd;
+  --shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(to bottom right, var(--bg-primary), #e8e4e1);
+  background: linear-gradient(135deg, var(--bg-primary), #e8e4e1);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   color: var(--text-primary);
-  text-align: center;
+  line-height: 1.6;
   padding: 16px;
   min-height: 100vh;
-  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #app {
-  max-width: 500px;
+  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
+  padding-bottom: 20px;
+}
+
+h1 {
+  color: var(--text-secondary);
+  margin: 0.8em 0 0.5em;
+  font-size: 1.8rem;
+  text-align: center;
 }
 
 h2 {
   color: var(--text-secondary);
-  margin: 0.8em 0;
-  font-size: 1.5em;
-}
-
-h3 {
-  color: var(--text-secondary);
-  margin: 0.7em 0;
-  font-size: 1.3em;
+  margin: 0.7em 0 0.4em;
+  font-size: 1.5rem;
 }
 
 p {
-  line-height: 1.5;
   margin: 0.8em 0;
 }
 
 button {
-  margin: 12px auto;
-  padding: 14px 24px;
-  font-size: 1.1em;
   background-color: var(--accent);
   color: white;
   border: none;
   border-radius: 14px;
-  cursor: pointer;
-  display: block;
-  width: 90%;
-  max-width: 300px;
-  transition: background-color 0.3s ease;
+  padding: 14px 20px;
+  font-size: 1.1rem;
   font-weight: 500;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  cursor: pointer;
+  width: 100%;
+  max-width: 300px;
+  margin: 12px auto;
+  display: block;
+  transition: background-color 0.3s;
+  box-shadow: var(--shadow);
 }
 
-button:hover, button:active {
+button:active, button:hover {
   background-color: var(--accent-hover);
 }
 
 .cta-button {
   background-color: var(--cta) !important;
-  font-size: 1.2em;
+  font-size: 1.2rem;
   padding: 16px 24px !important;
   margin: 25px auto !important;
 }
 
 .card-block {
-  margin: 20px auto;
-  padding: 20px;
   background: var(--bg-secondary);
   border-radius: 18px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-  animation: fadeInUp 0.5s ease;
+  padding: 20px;
+  margin: 20px auto;
+  box-shadow: var(--shadow);
+  animation: fadeIn 0.5s ease-out;
 }
 
 .card-img {
@@ -90,11 +97,11 @@ button:hover, button:active {
 }
 
 .tip {
-  font-weight: bold;
-  margin: 20px 0;
-  padding: 15px;
   background: #fff8e1;
   border-radius: 12px;
+  padding: 15px;
+  margin: 20px 0;
+  font-weight: 600;
   color: #5d4037;
 }
 
@@ -106,14 +113,7 @@ ul {
 }
 
 li {
-  margin: 8px 0;
-  line-height: 1.4;
-}
-
-a {
-  color: var(--cta);
-  font-weight: 500;
-  text-decoration: none;
+  margin: 10px 0;
 }
 
 .description-block {
@@ -121,45 +121,45 @@ a {
   padding: 25px;
   border-radius: 18px;
   margin: 20px auto;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow);
   max-width: 500px;
 }
 
 .step-indicator {
-  font-size: 0.9em;
+  font-size: 0.95rem;
   color: #666;
   margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.interpretation-section {
+  margin: 25px 0;
+  text-align: left;
+  opacity: 0;
+  animation: fadeIn 0.8s forwards;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Адаптивность для маленьких экранов */
-@media (max-width: 480px) {
+@media (max-width: 500px) {
   body {
     padding: 12px;
   }
   
-  .card-block, .description-block {
-    padding: 15px;
+  .description-block {
+    padding: 18px;
     margin: 15px 0;
   }
   
   button {
-    padding: 12px 20px;
-    font-size: 1em;
+    padding: 12px 16px;
+    font-size: 1rem;
+  }
+  
+  h1 {
+    font-size: 1.6rem;
   }
 }
