@@ -1,82 +1,134 @@
+:root {
+  --bg-primary: #fefaf6;
+  --bg-secondary: #ffffff;
+  --text-primary: #2e2e2e;
+  --text-secondary: #2d1e2f;
+  --accent: #5c5470;
+  --accent-hover: #7e7394;
+  --cta: #6a5acd;
+}
 
 body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(to bottom right, #fefaf6, #e8e4e1);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #2e2e2e;
+  background: linear-gradient(to bottom right, var(--bg-primary), #e8e4e1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  color: var(--text-primary);
   text-align: center;
-  padding: 20px;
-  animation: fadeIn 1s ease-in;
+  padding: 16px;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
-h2, h3 {
-  color: #2d1e2f;
-  margin-top: 1.2em;
+#app {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+h2 {
+  color: var(--text-secondary);
+  margin: 0.8em 0;
+  font-size: 1.5em;
+}
+
+h3 {
+  color: var(--text-secondary);
+  margin: 0.7em 0;
+  font-size: 1.3em;
+}
+
+p {
+  line-height: 1.5;
+  margin: 0.8em 0;
 }
 
 button {
-  margin: 10px;
-  padding: 12px 20px;
-  font-size: 1em;
-  background-color: #5c5470;
-  color: #fff;
+  margin: 12px auto;
+  padding: 14px 24px;
+  font-size: 1.1em;
+  background-color: var(--accent);
+  color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  display: block;
+  width: 90%;
+  max-width: 300px;
+  transition: background-color 0.3s ease;
+  font-weight: 500;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-button:hover {
-  background-color: #7e7394;
-  transform: scale(1.04);
+button:hover, button:active {
+  background-color: var(--accent-hover);
 }
 
-.layout-button {
-  display: inline-block;
-  min-width: 220px;
+.cta-button {
+  background-color: var(--cta) !important;
+  font-size: 1.2em;
+  padding: 16px 24px !important;
+  margin: 25px auto !important;
 }
 
 .card-block {
-  margin: 30px auto;
+  margin: 20px auto;
   padding: 20px;
-  max-width: 350px;
-  background: #ffffffcc;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  animation: fadeInUp 0.6s ease;
+  background: var(--bg-secondary);
+  border-radius: 18px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  animation: fadeInUp 0.5s ease;
 }
 
 .card-img {
-  max-width: 100%;
+  width: 100%;
+  max-width: 300px;
   height: auto;
-  border-radius: 12px;
-  margin-top: 10px;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  border-radius: 14px;
+  margin: 15px auto;
+  display: block;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 .tip {
   font-weight: bold;
-  margin-top: 30px;
+  margin: 20px 0;
+  padding: 15px;
+  background: #fff8e1;
+  border-radius: 12px;
+  color: #5d4037;
 }
 
 ul {
   text-align: left;
-  display: inline-block;
-  margin-top: 10px;
+  margin: 15px auto;
   padding-left: 1.5em;
-  font-size: 0.95em;
-  color: #3a3a3a;
+  max-width: 450px;
+}
+
+li {
+  margin: 8px 0;
+  line-height: 1.4;
 }
 
 a {
-  color: #614bc3;
+  color: var(--cta);
+  font-weight: 500;
   text-decoration: none;
 }
 
-a:hover {
-  text-decoration: underline;
+.description-block {
+  background: var(--bg-secondary);
+  padding: 25px;
+  border-radius: 18px;
+  margin: 20px auto;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  max-width: 500px;
+}
+
+.step-indicator {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 15px;
 }
 
 @keyframes fadeIn {
@@ -87,10 +139,27 @@ a:hover {
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Адаптивность для маленьких экранов */
+@media (max-width: 480px) {
+  body {
+    padding: 12px;
+  }
+  
+  .card-block, .description-block {
+    padding: 15px;
+    margin: 15px 0;
+  }
+  
+  button {
+    padding: 12px 20px;
+    font-size: 1em;
   }
 }
