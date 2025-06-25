@@ -1,10 +1,96 @@
+
 body {
   margin: 0;
-  font-family: sans-serif;
-  background-color: #f6f2ea;
-  color: #333;
-}
-#app {
-  padding: 2rem;
+  padding: 0;
+  background: linear-gradient(to bottom right, #fefaf6, #e8e4e1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #2e2e2e;
   text-align: center;
+  padding: 20px;
+  animation: fadeIn 1s ease-in;
+}
+
+h2, h3 {
+  color: #2d1e2f;
+  margin-top: 1.2em;
+}
+
+button {
+  margin: 10px;
+  padding: 12px 20px;
+  font-size: 1em;
+  background-color: #5c5470;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+button:hover {
+  background-color: #7e7394;
+  transform: scale(1.04);
+}
+
+.layout-button {
+  display: inline-block;
+  min-width: 220px;
+}
+
+.card-block {
+  margin: 30px auto;
+  padding: 20px;
+  max-width: 350px;
+  background: #ffffffcc;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  animation: fadeInUp 0.6s ease;
+}
+
+.card-img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin-top: 10px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+.tip {
+  font-weight: bold;
+  margin-top: 30px;
+}
+
+ul {
+  text-align: left;
+  display: inline-block;
+  margin-top: 10px;
+  padding-left: 1.5em;
+  font-size: 0.95em;
+  color: #3a3a3a;
+}
+
+a {
+  color: #614bc3;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
