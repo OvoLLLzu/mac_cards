@@ -64,14 +64,42 @@ const layouts = {
 
 let currentLayout = null;
 let usedCards = [];
+let cardImages = [];
 
-// Запуск расклада
+// Инициализация звука
+let soundInitialized = false;
+function initSound() {
+    const flipSound = document.getElementById('card-flip-sound');
+    if (flipSound && !soundInitialized) {
+        flipSound.play().catch(() => {
+            // Автовоспроизведение может быть заблокировано — это нормально
+        });
+        soundInitialized = true;
+    }
+}
+
+// Перемешивание карт
+function shuffleCards(total) {
+    const cards = [];
+    for (let i = 1; i <= total; i++) {
+        cards.push(i);
+    }
+    for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+    }
+    return cards;
+}
+
+// Начать расклад
 function startLayout(layoutType) {
     currentLayout = layouts[layoutType];
     document.getElementById('home').style.display = 'none';
     document.getElementById('cards-screen').style.display = 'block';
     document.getElementById('cards-container').innerHTML = '';
+    document.getElementById('interpretation-screen').style.display = 'none';
     usedCards = [];
+    cardImages = [];
 
     showDeck();
 }
@@ -102,14 +130,11 @@ function drawCard() {
     const container = document.getElementById('cards-container');
     const deck = document.getElementById('deck');
 
-    let cardNumber;
-    do {
-        cardNumber = Math.floor(Math.random() * currentLayout.totalCards) + 1;
-    } while (usedCards.includes(cardNumber));
-
+    const cardNumber = shuffleCards(currentLayout.totalCards).pop();
     usedCards.push(cardNumber);
 
-    const img = document.createElement('img');
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
     img.src = `${currentLayout.cardsFolder}card${cardNumber}.jpg`;
     img.alt = `Карта ${usedCards.length}`;
     img.className = 'card';
@@ -120,29 +145,45 @@ function drawCard() {
 
     container.appendChild(img);
 
+    // Инициализация звука при первом клике
+    initSound();
+
     // Воспроизведение звука
     const flipSound = document.getElementById('card-flip-sound');
-    flipSound.currentTime = 0;
-    flipSound.play();
-
-    setTimeout(() => {
-        deck.style.opacity = '0.4';
-        img.style.display = 'block';
-        img.classList.add('flip');
-    }, 500);
-
-    if (usedCards.length <= currentLayout.questions.length) {
-        const question = document.createElement('p');
-        question.textContent = currentLayout.questions[usedCards.length - 1];
-        container.appendChild(question);
+    if (flipSound && soundInitialized) {
+        flipSound.currentTime = 0;
+        flipSound.play();
     }
 
-    if (usedCards.length >= currentLayout.cardCount) {
-        const finishBtn = document.createElement('button');
-        finishBtn.textContent = 'Перейти к интерпретации';
-        finishBtn.onclick = finishLayout;
-        container.appendChild(finishBtn);
-    }
+    const self = this;
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const base64 = canvas.toDataURL('image/png');
+        cardImages.push(base64);
+
+        setTimeout(() => {
+            deck.style.opacity = '0.4';
+            img.style.display = 'block';
+            img.classList.add('flip');
+        }, 500);
+
+        if (usedCards.length <= currentLayout.questions.length) {
+            const question = document.createElement('p');
+            question.textContent = currentLayout.questions[usedCards.length - 1];
+            container.appendChild(question);
+        }
+
+        if (usedCards.length >= currentLayout.cardCount) {
+            const finishBtn = document.createElement('button');
+            finishBtn.textContent = 'Перейти к интерпретации';
+            finishBtn.onclick = finishLayout;
+            container.appendChild(finishBtn);
+        }
+    };
 }
 
 // Завершить расклад
@@ -154,14 +195,4 @@ function finishLayout() {
 // Сохранить в PDF
 function saveAsPDF() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text("Ваш расклад:", 10, 10);
-
-    for (let i = 0; i < usedCards.length; i++) {
-        doc.setFontSize(12);
-        doc.text(`Карта ${i + 1}: ${currentLayout.questions[i]}`, 10, 20 + i * 10);
-    }
-
-    doc.save("расклад.pdf");
-}
+    const
