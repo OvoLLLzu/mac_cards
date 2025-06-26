@@ -1,11 +1,14 @@
-// Список раскладов
+// Список раскладов с указанием:
+// - количество карт в колоде (totalCards)
+// - сколько карт нужно вытянуть (cardCount)
+// - путь к картам
 const layouts = {
     actual: {
         title: "Актуальный вопрос",
         description: "Сформулируйте свой запрос, далее поочередно выберите 3 карты.",
         cardsFolder: 'assets/cards/allegorii/',
         cardCount: 3,
-        totalCards: 101,
+        totalCards: 101, // Всего карт в колоде
         questions: [
             "Что нужно сделать, чтобы ситуация решилась? Какие действия предпринять?",
             "Что является основным препятствием в этой ситуации? Что мешает?",
@@ -63,48 +66,18 @@ const layouts = {
 };
 
 let currentLayout = null;
-let usedCards = [];
-let cardImages = [];
+let usedCards = []; // Использованные карты в этом раскладе
 
-// Инициализация звука
-let soundInitialized = false;
-function initSound() {
-    const flipSound = document.getElementById('card-flip-sound');
-    if (flipSound && !soundInitialized) {
-        flipSound.play().catch(() => {
-            // Автовоспроизведение может быть заблокировано — это нормально
-        });
-        soundInitialized = true;
-    }
-}
-
-// Перемешивание карт
-function shuffleCards(total) {
-    const cards = [];
-    for (let i = 1; i <= total; i++) {
-        cards.push(i);
-    }
-    for (let i = cards.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [cards[i], cards[j]] = [cards[j], cards[i]];
-    }
-    return cards;
-}
-
-// Начать расклад
 function startLayout(layoutType) {
     currentLayout = layouts[layoutType];
     document.getElementById('home').style.display = 'none';
     document.getElementById('cards-screen').style.display = 'block';
     document.getElementById('cards-container').innerHTML = '';
-    document.getElementById('interpretation-screen').style.display = 'none';
-    usedCards = [];
-    cardImages = [];
+    usedCards = []; // Очищаем список использованных карт
 
     showDeck();
 }
 
-// Анимация колоды
 function showDeck() {
     const container = document.getElementById('cards-container');
     container.innerHTML = `
@@ -123,76 +96,52 @@ function showDeck() {
     }, 3000);
 }
 
-// Открытие карты
 function drawCard() {
     if (usedCards.length >= currentLayout.cardCount) return;
 
     const container = document.getElementById('cards-container');
     const deck = document.getElementById('deck');
 
-    const cardNumber = shuffleCards(currentLayout.totalCards).pop();
+    let cardNumber;
+    do {
+        cardNumber = Math.floor(Math.random() * currentLayout.totalCards) + 1;
+    } while (usedCards.includes(cardNumber));
+
     usedCards.push(cardNumber);
 
-    const img = new Image();
-    img.crossOrigin = 'Anonymous';
+    const img = document.createElement('img');
     img.src = `${currentLayout.cardsFolder}card${cardNumber}.jpg`;
     img.alt = `Карта ${usedCards.length}`;
     img.className = 'card';
     img.style.display = 'none';
     img.onerror = () => {
         img.src = 'https://via.placeholder.com/200x300?text=Карта+не+найдена';
+        img.onerror = null;
     };
 
     container.appendChild(img);
 
-    // Инициализация звука при первом клике
-    initSound();
+    setTimeout(() => {
+        deck.style.opacity = '0.4';
+        img.style.display = 'block';
+        img.classList.add('flip');
+    }, 500);
 
-    // Воспроизведение звука
-    const flipSound = document.getElementById('card-flip-sound');
-    if (flipSound && soundInitialized) {
-        flipSound.currentTime = 0;
-        flipSound.play();
+    if (usedCards.length <= currentLayout.questions.length) {
+        const question = document.createElement('p');
+        question.textContent = currentLayout.questions[usedCards.length - 1];
+        container.appendChild(question);
     }
 
-    const self = this;
-    img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        const base64 = canvas.toDataURL('image/png');
-        cardImages.push(base64);
-
-        setTimeout(() => {
-            deck.style.opacity = '0.4';
-            img.style.display = 'block';
-            img.classList.add('flip');
-        }, 500);
-
-        if (usedCards.length <= currentLayout.questions.length) {
-            const question = document.createElement('p');
-            question.textContent = currentLayout.questions[usedCards.length - 1];
-            container.appendChild(question);
-        }
-
-        if (usedCards.length >= currentLayout.cardCount) {
-            const finishBtn = document.createElement('button');
-            finishBtn.textContent = 'Перейти к интерпретации';
-            finishBtn.onclick = finishLayout;
-            container.appendChild(finishBtn);
-        }
-    };
+    if (usedCards.length >= currentLayout.cardCount) {
+        const finishBtn = document.createElement('button');
+        finishBtn.textContent = 'Перейти к интерпретации';
+        finishBtn.onclick = finishLayout;
+        container.appendChild(finishBtn);
+    }
 }
 
-// Завершить расклад
 function finishLayout() {
     document.getElementById('cards-screen').style.display = 'none';
     document.getElementById('interpretation-screen').style.display = 'block';
 }
-
-// Сохранить в PDF
-function saveAsPDF() {
-    const { jsPDF } = window.jspdf;
-    const
