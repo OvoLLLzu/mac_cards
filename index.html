@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="style.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet">
-    <!-- Favicon -->
-    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -51,11 +51,18 @@
                 <li>Как то, что изображено на карте, говорит мне о моем запросе?</li>
             </ul>
             <p class="warning">⚠️ Расклад не сохраняется. Сделайте скриншот!</p>
+            <button onclick="saveAsPDF()">Сохранить в PDF</button>
             <a href="https://t.me/Netele_Zu" target="_blank">
                 <button>Записаться на консультацию</button>
             </a>
         </div>
     </div>
+
+    <!-- Аудио -->
+    <audio id="card-flip-sound">
+        <source src="assets/sounds/card_flip.mp3" type="audio/mpeg">
+        Ваш браузер не поддерживает воспроизведение звука.
+    </audio>
 
     <!-- Скрипты -->
     <script src="script.js"></script>

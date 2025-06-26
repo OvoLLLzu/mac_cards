@@ -1,14 +1,11 @@
-// Список раскладов с указанием:
-// - количество карт в колоде (totalCards)
-// - сколько карт нужно вытянуть (cardCount)
-// - путь к картам
+// Список раскладов
 const layouts = {
     actual: {
         title: "Актуальный вопрос",
         description: "Сформулируйте свой запрос, далее поочередно выберите 3 карты.",
         cardsFolder: 'assets/cards/allegorii/',
         cardCount: 3,
-        totalCards: 101, // Всего карт в колоде
+        totalCards: 101,
         questions: [
             "Что нужно сделать, чтобы ситуация решилась? Какие действия предпринять?",
             "Что является основным препятствием в этой ситуации? Что мешает?",
@@ -66,18 +63,20 @@ const layouts = {
 };
 
 let currentLayout = null;
-let usedCards = []; // Использованные карты в этом раскладе
+let usedCards = [];
 
+// Запуск расклада
 function startLayout(layoutType) {
     currentLayout = layouts[layoutType];
     document.getElementById('home').style.display = 'none';
     document.getElementById('cards-screen').style.display = 'block';
     document.getElementById('cards-container').innerHTML = '';
-    usedCards = []; // Очищаем список использованных карт
+    usedCards = [];
 
     showDeck();
 }
 
+// Анимация колоды
 function showDeck() {
     const container = document.getElementById('cards-container');
     container.innerHTML = `
@@ -96,6 +95,7 @@ function showDeck() {
     }, 3000);
 }
 
+// Открытие карты
 function drawCard() {
     if (usedCards.length >= currentLayout.cardCount) return;
 
@@ -116,10 +116,14 @@ function drawCard() {
     img.style.display = 'none';
     img.onerror = () => {
         img.src = 'https://via.placeholder.com/200x300?text=Карта+не+найдена';
-        img.onerror = null;
     };
 
     container.appendChild(img);
+
+    // Воспроизведение звука
+    const flipSound = document.getElementById('card-flip-sound');
+    flipSound.currentTime = 0;
+    flipSound.play();
 
     setTimeout(() => {
         deck.style.opacity = '0.4';
@@ -141,7 +145,23 @@ function drawCard() {
     }
 }
 
+// Завершить расклад
 function finishLayout() {
     document.getElementById('cards-screen').style.display = 'none';
     document.getElementById('interpretation-screen').style.display = 'block';
+}
+
+// Сохранить в PDF
+function saveAsPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Ваш расклад:", 10, 10);
+
+    for (let i = 0; i < usedCards.length; i++) {
+        doc.setFontSize(12);
+        doc.text(`Карта ${i + 1}: ${currentLayout.questions[i]}`, 10, 20 + i * 10);
+    }
+
+    doc.save("расклад.pdf");
 }
