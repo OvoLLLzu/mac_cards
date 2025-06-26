@@ -1,9 +1,14 @@
+// Список раскладов с указанием:
+// - количество карт в колоде (totalCards)
+// - сколько карт нужно вытянуть (cardCount)
+// - путь к картам
 const layouts = {
     actual: {
         title: "Актуальный вопрос",
         description: "Сформулируйте свой запрос, далее поочередно выберите 3 карты.",
         cardsFolder: 'assets/cards/allegorii/',
         cardCount: 3,
+        totalCards: 101, // Всего карт в колоде
         questions: [
             "Что нужно сделать, чтобы ситуация решилась? Какие действия предпринять?",
             "Что является основным препятствием в этой ситуации? Что мешает?",
@@ -15,6 +20,7 @@ const layouts = {
         description: "Сформулируйте запрос, далее поочередно выберите 5 карт.",
         cardsFolder: 'assets/cards/lichnye_granicy/',
         cardCount: 5,
+        totalCards: 99,
         questions: [
             "Что я делаю в отношениях?",
             "Что я хочу от отношений?",
@@ -28,6 +34,7 @@ const layouts = {
         description: "Сформулируйте запрос, далее поочередно выберите 4 карты.",
         cardsFolder: 'assets/cards/delovaya_koloda/',
         cardCount: 4,
+        totalCards: 102,
         questions: [
             "Какие мои качества способствуют получению дохода?",
             "Какие мои качества останавливают поток денег в мою жизнь?",
@@ -40,6 +47,7 @@ const layouts = {
         description: "Сформулируйте запрос, далее поочередно выберите 4 карты.",
         cardsFolder: 'assets/cards/delovaya_koloda/',
         cardCount: 4,
+        totalCards: 102,
         questions: [
             "Что деньги думают обо мне (Я глазами денег)?",
             "Из-за каких моих качеств деньги не любят приходить ко мне?",
@@ -52,21 +60,21 @@ const layouts = {
         description: "Простой расклад из одной карты, поможет найти ответ на любой вопрос.",
         cardsFolder: 'assets/cards/resursy/',
         cardCount: 1,
+        totalCards: 99,
         questions: []
     }
 };
 
 let currentLayout = null;
-let currentCardIndex = 0;
+let usedCards = []; // Использованные карты в этом раскладе
 
 function startLayout(layoutType) {
     currentLayout = layouts[layoutType];
     document.getElementById('home').style.display = 'none';
     document.getElementById('cards-screen').style.display = 'block';
     document.getElementById('cards-container').innerHTML = '';
-    currentCardIndex = 0;
+    usedCards = []; // Очищаем список использованных карт
 
-    // Показываем колоду и запускаем анимацию
     showDeck();
 }
 
@@ -89,16 +97,27 @@ function showDeck() {
 }
 
 function drawCard() {
-    if (currentCardIndex >= currentLayout.cardCount) return;
+    if (usedCards.length >= currentLayout.cardCount) return;
 
     const container = document.getElementById('cards-container');
     const deck = document.getElementById('deck');
 
+    let cardNumber;
+    do {
+        cardNumber = Math.floor(Math.random() * currentLayout.totalCards) + 1;
+    } while (usedCards.includes(cardNumber));
+
+    usedCards.push(cardNumber);
+
     const img = document.createElement('img');
-    img.src = `${currentLayout.cardsFolder}card${currentCardIndex + 1}.jpg`;
-    img.alt = `Карта ${currentCardIndex + 1}`;
+    img.src = `${currentLayout.cardsFolder}card${cardNumber}.jpg`;
+    img.alt = `Карта ${usedCards.length}`;
     img.className = 'card';
     img.style.display = 'none';
+    img.onerror = () => {
+        img.src = 'https://via.placeholder.com/200x300?text=Карта+не+найдена';
+        img.onerror = null;
+    };
 
     container.appendChild(img);
 
@@ -108,15 +127,13 @@ function drawCard() {
         img.classList.add('flip');
     }, 500);
 
-    if (currentCardIndex < currentLayout.questions.length) {
+    if (usedCards.length <= currentLayout.questions.length) {
         const question = document.createElement('p');
-        question.textContent = currentLayout.questions[currentCardIndex];
+        question.textContent = currentLayout.questions[usedCards.length - 1];
         container.appendChild(question);
     }
 
-    currentCardIndex++;
-
-    if (currentCardIndex >= currentLayout.cardCount) {
+    if (usedCards.length >= currentLayout.cardCount) {
         const finishBtn = document.createElement('button');
         finishBtn.textContent = 'Перейти к интерпретации';
         finishBtn.onclick = finishLayout;
