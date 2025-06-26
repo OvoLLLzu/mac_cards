@@ -1,4 +1,3 @@
-@ -1,147 +1,157 @@
 // Список раскладов с указанием:
 // - количество карт в колоде (totalCards)
 // - сколько карт нужно вытянуть (cardCount)
@@ -86,7 +85,6 @@ function showDeck() {
             <div class="card-back"></div>
         </div>
         <p id="draw-button" class="hidden" onclick="drawCard()">Нажмите, чтобы открыть карту</p>
-        <button id="draw-button" class="hidden" onclick="drawCard()">Нажмите, чтобы открыть карту</button>
     `;
 
     const deck = document.getElementById('deck');
@@ -121,13 +119,6 @@ function drawCard() {
         img.onerror = null;
     };
 
-    if (usedCards.length <= currentLayout.questions.length) {
-        const question = document.createElement('h2');
-        question.textContent = currentLayout.questions[usedCards.length - 1];
-container.appendChild(question); 
-        
-    }
-
     container.appendChild(img);
 
     setTimeout(() => {
@@ -135,8 +126,6 @@ container.appendChild(question);
         img.style.display = 'block';
         img.classList.add('flip');
     }, 500);
-    }, 1000);
-
 
     if (usedCards.length <= currentLayout.questions.length) {
         const question = document.createElement('p');
@@ -146,14 +135,6 @@ container.appendChild(question);
 
     if (usedCards.length >= currentLayout.cardCount) {
         const finishBtn = document.createElement('button');
-        
- 	const warning = document.createElement('div');
-        warning.className = 'warning-message';
-        warning.innerHTML = '⚠️ Расклад не сохраняется. Сделайте скриншот!';
-        container.appendChild(warning); 
-
-
-	const finishBtn = document.createElement('button');
         finishBtn.textContent = 'Перейти к интерпретации';
         finishBtn.onclick = finishLayout;
         container.appendChild(finishBtn);
