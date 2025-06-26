@@ -1,3 +1,4 @@
+@ -1,147 +1,157 @@
 // Список раскладов с указанием:
 // - количество карт в колоде (totalCards)
 // - сколько карт нужно вытянуть (cardCount)
@@ -84,6 +85,7 @@ function showDeck() {
         <div id="deck" class="deck">
             <div class="card-back"></div>
         </div>
+        <p id="draw-button" class="hidden" onclick="drawCard()">Нажмите, чтобы открыть карту</p>
         <button id="draw-button" class="hidden" onclick="drawCard()">Нажмите, чтобы открыть карту</button>
     `;
 
@@ -132,11 +134,18 @@ container.appendChild(question);
         deck.style.opacity = '0.4';
         img.style.display = 'block';
         img.classList.add('flip');
+    }, 500);
     }, 1000);
 
 
+    if (usedCards.length <= currentLayout.questions.length) {
+        const question = document.createElement('p');
+        question.textContent = currentLayout.questions[usedCards.length - 1];
+        container.appendChild(question);
+    }
 
     if (usedCards.length >= currentLayout.cardCount) {
+        const finishBtn = document.createElement('button');
         
  	const warning = document.createElement('div');
         warning.className = 'warning-message';
