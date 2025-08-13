@@ -75,13 +75,20 @@ let currentLayoutKey = null;
 let usedCards = []; // Использованные карты в этом раскладе
 
 // Telegram WebApp integration helpers
-const tg = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+function getTg() {
+    try {
+        return (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+    } catch (_) {
+        return null;
+    }
+}
 
 function applyTelegramTheme() {
-    if (!tg) return;
-    const theme = tg.themeParams || {};
+    const t = getTg();
+    if (!t) return;
+    const theme = t.themeParams || {};
     if (theme.bg_color) {
-        document.body.style.backgroundColor = theme.bg_color;
+        document.body.style.background = theme.bg_color;
     }
     if (theme.text_color) {
         document.body.style.color = theme.text_color;
@@ -96,12 +103,13 @@ function applyTelegramTheme() {
 }
 
 function initTelegram() {
-    if (!tg) return;
+    const t = getTg();
+    if (!t) return;
     try {
-        tg.ready();
-        tg.expand();
+        t.ready();
+        t.expand();
         applyTelegramTheme();
-        tg.onEvent('themeChanged', applyTelegramTheme);
+        t.onEvent('themeChanged', applyTelegramTheme);
     } catch (_) {
         // ignore
     }
@@ -142,13 +150,14 @@ function goHome() {
     currentLayout = null;
     currentLayoutKey = null;
     // Telegram UI
-    if (tg) {
+    const t = getTg();
+    if (t) {
         try {
-            tg.MainButton.hide();
-            tg.BackButton.hide();
-            tg.offEvent('mainButtonClicked', finishLayout);
-            tg.offEvent('mainButtonClicked', sendResult);
-            tg.BackButton.offClick(goHome);
+            t.MainButton.hide();
+            t.BackButton.hide();
+            t.MainButton.offClick(finishLayout);
+            t.MainButton.offClick(sendResult);
+            t.BackButton.offClick(goHome);
         } catch (_) {}
     }
     // Очистить query
@@ -185,15 +194,20 @@ async function startLayout(layoutType) {
     usedCards = []; // Очищаем список использованных карт
 
     // Telegram UI
-    if (tg) {
+    const t = getTg();
+    if (t) {
         try {
-            tg.MainButton.hide();
-            tg.MainButton.setParams({ text: 'Перейти к интерпретации' });
-            tg.offEvent('mainButtonClicked', finishLayout);
-            tg.offEvent('mainButtonClicked', sendResult);
-            tg.onEvent('mainButtonClicked', finishLayout);
-            tg.BackButton.show();
-            tg.BackButton.onClick(goHome);
+            t.MainButton.hide();
+            if (t.MainButton.setText) {
+                t.MainButton.setText('Перейти к интерпретации');
+            } else if (t.MainButton.setParams) {
+                t.MainButton.setParams({ text: 'Перейти к интерпретации' });
+            }
+            t.MainButton.offClick(finishLayout);
+            t.MainButton.offClick(sendResult);
+            t.MainButton.onClick(finishLayout);
+            t.BackButton.show();
+            t.BackButton.onClick(goHome);
         } catch (_) {}
     }
 
@@ -205,7 +219,7 @@ function showDeck() {
     const container = document.getElementById('cards-container');
     container.innerHTML = `
         <div class="top-bar">
-            ${tg ? '' : '<button id="back-home-btn" onclick="goHome()">Назад</button>'}
+            ${getTg() ? '' : '<button id="back-home-btn" onclick="goHome()">Назад</button>'}
             <div class="layout-header">
                 <h2>${currentLayout.title}</h2>
                 <p>${currentLayout.description}</p>
@@ -269,8 +283,9 @@ function drawCard() {
         img.classList.add('flip');
     }, 400);
 
-    if (tg && tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function') {
-        try { tg.HapticFeedback.impactOccurred('light'); } catch (_) {}
+    const t = getTg();
+    if (t && t.HapticFeedback && typeof t.HapticFeedback.impactOccurred === 'function') {
+        try { t.HapticFeedback.impactOccurred('light'); } catch (_) {}
     }
 
     if (usedCards.length <= currentLayout.questions.length) {
@@ -283,9 +298,10 @@ function drawCard() {
     updateStatus();
 
     if (usedCards.length >= currentLayout.cardCount) {
-        if (tg) {
+        const t2 = getTg();
+        if (t2) {
             try {
-                tg.MainButton.show();
+                t2.MainButton.show();
             } catch (_) {}
         } else {
             const finishBtn = document.createElement('button');
@@ -299,13 +315,18 @@ function drawCard() {
 function finishLayout() {
     document.getElementById('cards-screen').style.display = 'none';
     document.getElementById('interpretation-screen').style.display = 'block';
-    if (tg) {
+    const t = getTg();
+    if (t) {
         try {
-            tg.MainButton.setParams({ text: 'Отправить результат' });
-            tg.offEvent('mainButtonClicked', finishLayout);
-            tg.offEvent('mainButtonClicked', sendResult);
-            tg.onEvent('mainButtonClicked', sendResult);
-            tg.MainButton.show();
+            if (t.MainButton.setText) {
+                t.MainButton.setText('Отправить результат');
+            } else if (t.MainButton.setParams) {
+                t.MainButton.setParams({ text: 'Отправить результат' });
+            }
+            t.MainButton.offClick(finishLayout);
+            t.MainButton.offClick(sendResult);
+            t.MainButton.onClick(sendResult);
+            t.MainButton.show();
         } catch (_) {}
     }
     // Обновить URL для шаринга
@@ -325,14 +346,27 @@ function buildShareLink() {
 
 function copyShareLink() {
     const link = buildShareLink();
+    const t = getTg();
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(link).then(() => {
-            alert('Ссылка скопирована');
+            if (t && t.showPopup) {
+                t.showPopup({ title: 'Готово', message: 'Ссылка скопирована' });
+            } else {
+                alert('Ссылка скопирована');
+            }
         }).catch(() => {
-            prompt('Скопируйте ссылку:', link);
+            if (t && t.showPopup) {
+                t.showPopup({ title: 'Ссылка', message: link });
+            } else {
+                prompt('Скопируйте ссылку:', link);
+            }
         });
     } else {
-        prompt('Скопируйте ссылку:', link);
+        if (t && t.showPopup) {
+            t.showPopup({ title: 'Ссылка', message: link });
+        } else {
+            prompt('Скопируйте ссылку:', link);
+        }
     }
 }
 
@@ -343,12 +377,19 @@ function sendResult() {
         layoutTitle: currentLayout ? currentLayout.title : '',
         cards: usedCards
     };
-    if (tg && typeof tg.sendData === 'function') {
+    const t = getTg();
+    if (t && typeof t.sendData === 'function') {
         try {
-            tg.sendData(JSON.stringify(payload));
-            tg.showPopup && tg.showPopup({ title: 'Отправлено', message: 'Результат отправлен боту' });
+            t.sendData(JSON.stringify(payload));
+            if (t.showPopup) {
+                t.showPopup({ title: 'Отправлено', message: 'Результат отправлен боту' });
+            }
         } catch (_) {
-            alert('Не удалось отправить результат');
+            if (t && t.showPopup) {
+                t.showPopup({ title: 'Ошибка', message: 'Не удалось отправить результат' });
+            } else {
+                alert('Не удалось отправить результат');
+            }
         }
     } else {
         alert('В Telegram можно отправить результат кнопкой внизу');
@@ -362,7 +403,7 @@ function restoreFromParams(layoutKey, cards) {
     document.getElementById('cards-screen').style.display = 'block';
     const container = document.getElementById('cards-container');
     container.innerHTML = `
-        <div class=\"top-bar\">${tg ? '' : '<button id=\"back-home-btn\" onclick=\"goHome()\">Назад</button>'}
+        <div class=\"top-bar\">${getTg() ? '' : '<button id=\"back-home-btn\" onclick=\"goHome()\">Назад</button>'}
             <div class=\"layout-header\">
                 <h2>${currentLayout.title}</h2>
                 <p>${currentLayout.description}</p>
@@ -394,15 +435,20 @@ function restoreFromParams(layoutKey, cards) {
         usedCards.push(num);
     });
 
-    if (tg) {
+    const t = getTg();
+    if (t) {
         try {
-            tg.MainButton.setParams({ text: 'Перейти к интерпретации' });
-            tg.offEvent('mainButtonClicked', finishLayout);
-            tg.offEvent('mainButtonClicked', sendResult);
-            tg.onEvent('mainButtonClicked', finishLayout);
-            tg.BackButton.show();
-            tg.BackButton.onClick(goHome);
-            tg.MainButton.show();
+            if (t.MainButton.setText) {
+                t.MainButton.setText('Перейти к интерпретации');
+            } else if (t.MainButton.setParams) {
+                t.MainButton.setParams({ text: 'Перейти к интерпретации' });
+            }
+            t.MainButton.offClick(finishLayout);
+            t.MainButton.offClick(sendResult);
+            t.MainButton.onClick(finishLayout);
+            t.BackButton.show();
+            t.BackButton.onClick(goHome);
+            t.MainButton.show();
         } catch (_) {}
     } else {
         const finishBtn = document.createElement('button');
