@@ -115,3 +115,42 @@ button:hover {
     margin: 20px 0;
     text-align: center;
 }
+
+/* New styles */
+.top-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.top-bar #back-home-btn {
+    padding: 10px 14px;
+}
+
+.layout-header h2 {
+    margin: 0 0 6px 0;
+}
+
+.layout-header p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.status {
+    text-align: center;
+    margin: 8px 0 0 0;
+    font-weight: 600;
+}
+
+.question {
+    margin: 6px auto 0 auto;
+    max-width: 480px;
+    text-align: center;
+}
+
+.footer-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}

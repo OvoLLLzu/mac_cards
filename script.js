@@ -68,6 +68,61 @@ const layouts = {
 let currentLayout = null;
 let usedCards = []; // Использованные карты в этом раскладе
 
+// Telegram WebApp integration helpers
+const tg = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+
+function applyTelegramTheme() {
+    if (!tg) return;
+    const theme = tg.themeParams || {};
+    if (theme.bg_color) {
+        document.body.style.backgroundColor = theme.bg_color;
+    }
+    if (theme.text_color) {
+        document.body.style.color = theme.text_color;
+    }
+}
+
+function initTelegram() {
+    if (!tg) return;
+    try {
+        tg.ready();
+        tg.expand();
+        applyTelegramTheme();
+        tg.onEvent('themeChanged', applyTelegramTheme);
+    } catch (_) {
+        // ignore
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initTelegram();
+    const backToHomeBtn = document.getElementById('back-to-home');
+    if (backToHomeBtn) {
+        backToHomeBtn.addEventListener('click', goHome);
+    }
+});
+
+function goHome() {
+    // Сброс экранов
+    document.getElementById('cards-screen').style.display = 'none';
+    document.getElementById('interpretation-screen').style.display = 'none';
+    document.getElementById('home').style.display = 'block';
+    // Очистить контейнер карт
+    const container = document.getElementById('cards-container');
+    if (container) container.innerHTML = '';
+    usedCards = [];
+    currentLayout = null;
+    // Telegram UI
+    if (tg) {
+        try {
+            tg.MainButton.hide();
+            tg.BackButton.hide();
+            tg.offEvent('mainButtonClicked', finishLayout);
+            tg.BackButton.offClick(goHome);
+        } catch (_) {}
+    }
+}
+
 function startLayout(layoutType) {
     currentLayout = layouts[layoutType];
     document.getElementById('home').style.display = 'none';
@@ -75,16 +130,36 @@ function startLayout(layoutType) {
     document.getElementById('cards-container').innerHTML = '';
     usedCards = []; // Очищаем список использованных карт
 
+    // Telegram UI
+    if (tg) {
+        try {
+            tg.MainButton.hide();
+            tg.MainButton.setParams({ text: 'Перейти к интерпретации' });
+            tg.offEvent('mainButtonClicked', finishLayout);
+            tg.onEvent('mainButtonClicked', finishLayout);
+            tg.BackButton.show();
+            tg.BackButton.onClick(goHome);
+        } catch (_) {}
+    }
+
     showDeck();
 }
 
 function showDeck() {
     const container = document.getElementById('cards-container');
     container.innerHTML = `
+        <div class="top-bar">
+            ${tg ? '' : '<button id="back-home-btn" onclick="goHome()">Назад</button>'}
+            <div class="layout-header">
+                <h2>${currentLayout.title}</h2>
+                <p>${currentLayout.description}</p>
+            </div>
+        </div>
         <div id="deck" class="deck">
             <div class="card-back"></div>
         </div>
         <p id="draw-button" class="hidden" onclick="drawCard()">Нажмите, чтобы открыть карту</p>
+        <p id="status" class="status">Выбрано 0 из ${currentLayout.cardCount}</p>
     `;
 
     const deck = document.getElementById('deck');
@@ -93,7 +168,13 @@ function showDeck() {
     setTimeout(() => {
         deck.classList.remove('shuffle');
         document.getElementById('draw-button').classList.remove('hidden');
-    }, 3000);
+    }, 1500);
+}
+
+function updateStatus() {
+    const status = document.getElementById('status');
+    if (!status) return;
+    status.textContent = `Выбрано ${usedCards.length} из ${currentLayout.cardCount}`;
 }
 
 function drawCard() {
@@ -103,8 +184,11 @@ function drawCard() {
     const deck = document.getElementById('deck');
 
     let cardNumber;
+    let guard = 0;
     do {
         cardNumber = Math.floor(Math.random() * currentLayout.totalCards) + 1;
+        guard += 1;
+        if (guard > currentLayout.totalCards + 5) break; // защита от теоретической бесконечной петли
     } while (usedCards.includes(cardNumber));
 
     usedCards.push(cardNumber);
@@ -114,6 +198,7 @@ function drawCard() {
     img.alt = `Карта ${usedCards.length}`;
     img.className = 'card';
     img.style.display = 'none';
+    img.loading = 'lazy';
     img.onerror = () => {
         img.src = 'https://via.placeholder.com/200x300?text=Карта+не+найдена';
         img.onerror = null;
@@ -125,23 +210,39 @@ function drawCard() {
         deck.style.opacity = '0.4';
         img.style.display = 'block';
         img.classList.add('flip');
-    }, 500);
+    }, 400);
+
+    if (tg && tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function') {
+        try { tg.HapticFeedback.impactOccurred('light'); } catch (_) {}
+    }
 
     if (usedCards.length <= currentLayout.questions.length) {
         const question = document.createElement('p');
         question.textContent = currentLayout.questions[usedCards.length - 1];
+        question.className = 'question';
         container.appendChild(question);
     }
 
+    updateStatus();
+
     if (usedCards.length >= currentLayout.cardCount) {
-        const finishBtn = document.createElement('button');
-        finishBtn.textContent = 'Перейти к интерпретации';
-        finishBtn.onclick = finishLayout;
-        container.appendChild(finishBtn);
+        if (tg) {
+            try {
+                tg.MainButton.show();
+            } catch (_) {}
+        } else {
+            const finishBtn = document.createElement('button');
+            finishBtn.textContent = 'Перейти к интерпретации';
+            finishBtn.onclick = finishLayout;
+            container.appendChild(finishBtn);
+        }
     }
 }
 
 function finishLayout() {
     document.getElementById('cards-screen').style.display = 'none';
     document.getElementById('interpretation-screen').style.display = 'block';
+    if (tg) {
+        try { tg.MainButton.hide(); } catch (_) {}
+    }
 }
