@@ -9,6 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet">
     <!-- Favicon -->
     <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <!-- PWA manifest -->
+    <link rel="manifest" href="manifest.webmanifest">
 </head>
 <body>
     <div class="container">
@@ -51,6 +53,10 @@
                 <li>Как то, что изображено на карте, говорит мне о моем запросе?</li>
             </ul>
             <p class="warning">⚠️ Расклад не сохраняется. Сделайте скриншот!</p>
+            <div class="share-actions">
+                <button id="copy-link" type="button">Скопировать ссылку</button>
+                <button id="send-result" type="button">Отправить результат</button>
+            </div>
             <a href="https://t.me/Netele_Zu" target="_blank">
                 <button>Записаться на консультацию</button>
             </a>
@@ -60,7 +66,29 @@
         </div>
     </div>
 
+    <!-- Модал для просмотра карты -->
+    <div id="image-modal" class="modal" style="display: none;" aria-hidden="true" role="dialog" aria-label="Просмотр карты" onclick="closeImageModal()">
+        <div class="modal-content">
+            <img id="modal-image" alt="Просмотр карты" />
+        </div>
+    </div>
+
+    <!-- Онбординг -->
+    <div id="onboarding-overlay" class="onboarding" style="display: none;" aria-hidden="true" role="dialog" aria-label="Подсказка">
+        <div class="onboarding-content">
+            <p>Сформулируйте запрос и по очереди открывайте карты. Нажмите на карту, чтобы увеличить.</p>
+            <button type="button" onclick="dismissOnboarding()">Понятно</button>
+        </div>
+    </div>
+
     <!-- Скрипты -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js').catch(function(){});
+            });
+        }
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

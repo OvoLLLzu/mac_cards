@@ -7,8 +7,9 @@ const layouts = {
         title: "Актуальный вопрос",
         description: "Сформулируйте свой запрос, далее поочередно выберите 3 карты.",
         cardsFolder: 'assets/cards/allegorii/',
+        manifestFile: 'assets/cards/allegorii/manifest.json',
         cardCount: 3,
-        totalCards: 101, // Всего карт в колоде
+        totalCards: 101, // Всего карт в колоде (будет переопределено, если есть manifest.json)
         questions: [
             "Что нужно сделать, чтобы ситуация решилась? Какие действия предпринять?",
             "Что является основным препятствием в этой ситуации? Что мешает?",
@@ -19,6 +20,7 @@ const layouts = {
         title: "Отношения",
         description: "Сформулируйте запрос, далее поочередно выберите 5 карт.",
         cardsFolder: 'assets/cards/lichnye_granicy/',
+        manifestFile: 'assets/cards/lichnye_granicy/manifest.json',
         cardCount: 5,
         totalCards: 99,
         questions: [
@@ -33,6 +35,7 @@ const layouts = {
         title: "Деньги: Качества",
         description: "Сформулируйте запрос, далее поочередно выберите 4 карты.",
         cardsFolder: 'assets/cards/delovaya_koloda/',
+        manifestFile: 'assets/cards/delovaya_koloda/manifest.json',
         cardCount: 4,
         totalCards: 102,
         questions: [
@@ -46,6 +49,7 @@ const layouts = {
         title: "Деньги: Взгляд со стороны",
         description: "Сформулируйте запрос, далее поочередно выберите 4 карты.",
         cardsFolder: 'assets/cards/delovaya_koloda/',
+        manifestFile: 'assets/cards/delovaya_koloda/manifest.json',
         cardCount: 4,
         totalCards: 102,
         questions: [
@@ -59,6 +63,7 @@ const layouts = {
         title: "Простой расклад",
         description: "Простой расклад из одной карты, поможет найти ответ на любой вопрос.",
         cardsFolder: 'assets/cards/resursy/',
+        manifestFile: 'assets/cards/resursy/manifest.json',
         cardCount: 1,
         totalCards: 99,
         questions: []
@@ -66,6 +71,7 @@ const layouts = {
 };
 
 let currentLayout = null;
+let currentLayoutKey = null;
 let usedCards = []; // Использованные карты в этом раскладе
 
 // Telegram WebApp integration helpers
@@ -79,6 +85,13 @@ function applyTelegramTheme() {
     }
     if (theme.text_color) {
         document.body.style.color = theme.text_color;
+        document.documentElement.style.setProperty('--text-color', theme.text_color);
+    }
+    if (theme.button_color) {
+        document.documentElement.style.setProperty('--btn-bg', theme.button_color);
+    }
+    if (theme.button_text_color) {
+        document.documentElement.style.setProperty('--btn-text', theme.button_text_color);
     }
 }
 
@@ -100,6 +113,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (backToHomeBtn) {
         backToHomeBtn.addEventListener('click', goHome);
     }
+    const copyBtn = document.getElementById('copy-link');
+    if (copyBtn) copyBtn.addEventListener('click', copyShareLink);
+    const sendBtn = document.getElementById('send-result');
+    if (sendBtn) sendBtn.addEventListener('click', sendResult);
+
+    // Восстановление расклада из URL, если есть параметры
+    const params = new URLSearchParams(window.location.search);
+    const layoutKey = params.get('l');
+    const cardsParam = params.get('c');
+    if (layoutKey && layouts[layoutKey] && cardsParam) {
+        const parsed = cardsParam.split(',').map(n => parseInt(n, 10)).filter(n => !isNaN(n));
+        if (parsed.length > 0) {
+            restoreFromParams(layoutKey, parsed);
+        }
+    }
 });
 
 function goHome() {
@@ -112,19 +140,45 @@ function goHome() {
     if (container) container.innerHTML = '';
     usedCards = [];
     currentLayout = null;
+    currentLayoutKey = null;
     // Telegram UI
     if (tg) {
         try {
             tg.MainButton.hide();
             tg.BackButton.hide();
             tg.offEvent('mainButtonClicked', finishLayout);
+            tg.offEvent('mainButtonClicked', sendResult);
             tg.BackButton.offClick(goHome);
         } catch (_) {}
     }
+    // Очистить query
+    if (window.history && window.history.replaceState) {
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, '', cleanUrl);
+    }
 }
 
-function startLayout(layoutType) {
+async function loadDeckMeta(layout) {
+    if (!layout || !layout.manifestFile) return;
+    try {
+        const res = await fetch(layout.manifestFile, { cache: 'no-cache' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (typeof data.totalCards === 'number' && data.totalCards > 0) {
+            layout.totalCards = data.totalCards;
+        } else if (Array.isArray(data.files) && data.files.length > 0) {
+            layout.totalCards = data.files.length;
+        }
+    } catch (_) {
+        // silently ignore
+    }
+}
+
+async function startLayout(layoutType) {
+    currentLayoutKey = layoutType;
     currentLayout = layouts[layoutType];
+    await loadDeckMeta(currentLayout);
+
     document.getElementById('home').style.display = 'none';
     document.getElementById('cards-screen').style.display = 'block';
     document.getElementById('cards-container').innerHTML = '';
@@ -136,6 +190,7 @@ function startLayout(layoutType) {
             tg.MainButton.hide();
             tg.MainButton.setParams({ text: 'Перейти к интерпретации' });
             tg.offEvent('mainButtonClicked', finishLayout);
+            tg.offEvent('mainButtonClicked', sendResult);
             tg.onEvent('mainButtonClicked', finishLayout);
             tg.BackButton.show();
             tg.BackButton.onClick(goHome);
@@ -143,6 +198,7 @@ function startLayout(layoutType) {
     }
 
     showDeck();
+    showOnboardingOnce();
 }
 
 function showDeck() {
@@ -203,6 +259,7 @@ function drawCard() {
         img.src = 'https://via.placeholder.com/200x300?text=Карта+не+найдена';
         img.onerror = null;
     };
+    img.addEventListener('click', () => openImageModal(img.src));
 
     container.appendChild(img);
 
@@ -243,6 +300,152 @@ function finishLayout() {
     document.getElementById('cards-screen').style.display = 'none';
     document.getElementById('interpretation-screen').style.display = 'block';
     if (tg) {
-        try { tg.MainButton.hide(); } catch (_) {}
+        try {
+            tg.MainButton.setParams({ text: 'Отправить результат' });
+            tg.offEvent('mainButtonClicked', finishLayout);
+            tg.offEvent('mainButtonClicked', sendResult);
+            tg.onEvent('mainButtonClicked', sendResult);
+            tg.MainButton.show();
+        } catch (_) {}
     }
+    // Обновить URL для шаринга
+    if (window.history && window.history.replaceState && currentLayoutKey) {
+        const url = buildShareLink();
+        window.history.replaceState({}, '', url);
+    }
+}
+
+function buildShareLink() {
+    const base = window.location.origin + window.location.pathname;
+    const params = new URLSearchParams();
+    params.set('l', currentLayoutKey);
+    params.set('c', usedCards.join(','));
+    return `${base}?${params.toString()}`;
+}
+
+function copyShareLink() {
+    const link = buildShareLink();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(() => {
+            alert('Ссылка скопирована');
+        }).catch(() => {
+            prompt('Скопируйте ссылку:', link);
+        });
+    } else {
+        prompt('Скопируйте ссылку:', link);
+    }
+}
+
+function sendResult() {
+    const payload = {
+        type: 'spread',
+        layoutKey: currentLayoutKey,
+        layoutTitle: currentLayout ? currentLayout.title : '',
+        cards: usedCards
+    };
+    if (tg && typeof tg.sendData === 'function') {
+        try {
+            tg.sendData(JSON.stringify(payload));
+            tg.showPopup && tg.showPopup({ title: 'Отправлено', message: 'Результат отправлен боту' });
+        } catch (_) {
+            alert('Не удалось отправить результат');
+        }
+    } else {
+        alert('В Telegram можно отправить результат кнопкой внизу');
+    }
+}
+
+function restoreFromParams(layoutKey, cards) {
+    currentLayoutKey = layoutKey;
+    currentLayout = layouts[layoutKey];
+    document.getElementById('home').style.display = 'none';
+    document.getElementById('cards-screen').style.display = 'block';
+    const container = document.getElementById('cards-container');
+    container.innerHTML = `
+        <div class=\"top-bar\">${tg ? '' : '<button id=\"back-home-btn\" onclick=\"goHome()\">Назад</button>'}
+            <div class=\"layout-header\">
+                <h2>${currentLayout.title}</h2>
+                <p>${currentLayout.description}</p>
+            </div>
+        </div>
+        <p id=\"status\" class=\"status\">Выбрано ${cards.length} из ${currentLayout.cardCount}</p>
+    `;
+
+    usedCards = [];
+    cards.forEach((num, idx) => {
+        const img = document.createElement('img');
+        img.src = `${currentLayout.cardsFolder}card${num}.jpg`;
+        img.alt = `Карта ${idx + 1}`;
+        img.className = 'card';
+        img.style.display = 'block';
+        img.loading = 'lazy';
+        img.addEventListener('click', () => openImageModal(img.src));
+        img.onerror = () => {
+            img.src = 'https://via.placeholder.com/200x300?text=Карта+не+найдена';
+            img.onerror = null;
+        };
+        container.appendChild(img);
+        if (idx < currentLayout.questions.length) {
+            const q = document.createElement('p');
+            q.textContent = currentLayout.questions[idx];
+            q.className = 'question';
+            container.appendChild(q);
+        }
+        usedCards.push(num);
+    });
+
+    if (tg) {
+        try {
+            tg.MainButton.setParams({ text: 'Перейти к интерпретации' });
+            tg.offEvent('mainButtonClicked', finishLayout);
+            tg.offEvent('mainButtonClicked', sendResult);
+            tg.onEvent('mainButtonClicked', finishLayout);
+            tg.BackButton.show();
+            tg.BackButton.onClick(goHome);
+            tg.MainButton.show();
+        } catch (_) {}
+    } else {
+        const finishBtn = document.createElement('button');
+        finishBtn.textContent = 'Перейти к интерпретации';
+        finishBtn.onclick = finishLayout;
+        container.appendChild(finishBtn);
+    }
+}
+
+function openImageModal(src) {
+    const modal = document.getElementById('image-modal');
+    const img = document.getElementById('modal-image');
+    if (!modal || !img) return;
+    img.src = src;
+    modal.style.display = 'block';
+    modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeImageModal() {
+    const modal = document.getElementById('image-modal');
+    if (!modal) return;
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+function showOnboardingOnce() {
+    try {
+        const key = 'onboarding_v1';
+        const wasShown = localStorage.getItem(key) === '1';
+        if (wasShown) return;
+        const overlay = document.getElementById('onboarding-overlay');
+        if (overlay) {
+            overlay.style.display = 'flex';
+            overlay.setAttribute('aria-hidden', 'false');
+        }
+    } catch (_) {}
+}
+
+function dismissOnboarding() {
+    const overlay = document.getElementById('onboarding-overlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+        overlay.setAttribute('aria-hidden', 'true');
+    }
+    try { localStorage.setItem('onboarding_v1', '1'); } catch (_) {}
 }
