@@ -6,6 +6,12 @@ body {
     line-height: 1.6;
 }
 
+:root {
+    --text-color: #333;
+    --btn-bg: #d1c4b9;
+    --btn-text: #000;
+}
+
 .container {
     max-width: 600px;
     margin: 0 auto;
@@ -34,13 +40,14 @@ h1 {
 }
 
 button {
-    background: #d1c4b9;
+    background: var(--btn-bg, #d1c4b9);
     border: none;
     padding: 15px;
     border-radius: 10px;
     font-size: 1em;
     cursor: pointer;
     transition: all 0.3s ease;
+    color: var(--btn-text, #000);
 }
 
 button:hover {
@@ -113,5 +120,97 @@ button:hover {
     color: #e67e22;
     font-weight: bold;
     margin: 20px 0;
+    text-align: center;
+}
+
+/* New styles */
+.top-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.top-bar #back-home-btn {
+    padding: 10px 14px;
+}
+
+.layout-header h2 {
+    margin: 0 0 6px 0;
+}
+
+.layout-header p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.status {
+    text-align: center;
+    margin: 8px 0 0 0;
+    font-weight: 600;
+}
+
+.question {
+    margin: 6px auto 0 auto;
+    max-width: 480px;
+    text-align: center;
+}
+
+.footer-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.share-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+.modal-content img {
+    display: block;
+    max-width: 100%;
+    max-height: 80vh;
+}
+
+/* Onboarding */
+.onboarding {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1001;
+}
+
+.onboarding-content {
+    background: #fff;
+    padding: 16px;
+    border-radius: 10px;
+    max-width: 520px;
     text-align: center;
 }
